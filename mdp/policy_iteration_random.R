@@ -13,6 +13,7 @@ require(glue)
 
 
 grid = negative_grid(step_cost = -1.0)
+
 grid$all_states()
 # states will be positions (i,j)
 # simpler than tic-tac-toe because we only have one "game piece"
@@ -115,15 +116,16 @@ while(TRUE){
           grid$set_state(x)
           r = grid$move(a2)                          # if not in a set of possible actions it bounces back
           new_v = new_v + p * (r + GAMMA * filter(V, row == grid$current_state()[1], col == grid$current_state()[2])%$%value)
-          if(new_v > best_value){
-            best_value <- new_v
-            new_a  = a  
-          }
+          
         
         }
+        if(new_v > best_value){
+          best_value <- new_v
+          new_a  = a  
+        }
+        
       }
       policy$action[policy_index] <- new_a  
-      
       
     }
     return(policy[policy_index,])
@@ -143,6 +145,7 @@ if(VERBOSE){
   print("Initial policy once again:")
   initial_policy
   print ("Values for uniformly random actions:")
+  print_policy(policy, grid)
   print_values(V, grid)
   
 }
