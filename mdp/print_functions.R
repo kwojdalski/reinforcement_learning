@@ -33,7 +33,6 @@ print_policy <- function(P, g){
       
       a = P[[3]][P$row == i & P$col == j]
       if(length(a)==0){
-        
         to_print <- glue("{to_print} {sprintf(' %s  |', NA)}")
       }else{
         to_print <- glue('{to_print} {sprintf("  %s  |", a)}')  

@@ -1,6 +1,8 @@
 # https://deeplearningcourses.com/c/artificial-intelligence-reinforcement-learning-in-python
 # https://www.udemy.com/artificial-intelligence-reinforcement-learning-in-python
-p_load(purrrlyr, stringr, purrr)
+library(pacman)
+p_load(purrrlyr, stringr, purrr, magrittr, dplyr, glue, R6)
+
 parse_position <- function(start){
   when(
     is.character(start) & length(start) == 1 ~ as.numeric(str_split_fixed(start, fixed(','),2)),
@@ -135,7 +137,7 @@ negative_grid <- function(step_cost = -0.1){
   g$rewards_update(
     data.frame(row    = c( 0, 0, 0, 1, 1, 2, 2, 2, 2),
                col    = c( 0, 1, 2, 0, 2, 0, 1, 2, 3),
-               reward = c(-1,-1,-1,-1,-1,-1,-1,-1,-1)*0.1)
+               reward = step_cost)
   )
   return(g)
   
