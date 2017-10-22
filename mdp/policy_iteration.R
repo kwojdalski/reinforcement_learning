@@ -6,7 +6,6 @@ SMALL_ENOUGH = 1e-3 # threshold for convergence
 GAMMA = 0.9
 ALL_POSSIBLE_ACTIONS = c('U', 'D', 'L', 'R')
 VERBOSE = T
-require(glue)
 
 
 

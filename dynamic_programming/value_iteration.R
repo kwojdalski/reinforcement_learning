@@ -90,6 +90,7 @@ rm(new_V)
     }
     V = new_V
     # Find a policy that leads to max_V
+    # Here we do no
 
     policy <- plyr::adply(policy[,1:2], 1, function(x){ # policy keys rather than states
       best_a = NA

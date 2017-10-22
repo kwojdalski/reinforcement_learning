@@ -1,7 +1,5 @@
 # https://deeplearningcourses.com/c/artificial-intelligence-reinforcement-learning-in-python
 # https://www.udemy.com/artificial-intelligence-reinforcement-learning-in-python
-library(pacman)
-p_load(purrrlyr, stringr, purrr, magrittr, dplyr, glue, R6)
 
 parse_position <- function(start){
   when(
@@ -35,6 +33,7 @@ Grid <- R6Class("Grid", public = list(
     self$actions = actions # possible actions
   },
   rewards_update = function(update){
+    # update is a data frame of updated values
     plyr::adply(update, 1, function(x){
       reward_index <- self$rewards$row == x$row & x$col == self$rewards$col
       if(any(reward_index)) {
@@ -87,14 +86,16 @@ Grid <- R6Class("Grid", public = list(
   game_over = function(){
     # returns true if game is over, else false
     # true if we are in a state where no actions are possible
-    return(!c(self$i, self$j) %in% self$actions)
+    to_ret <- any(self$i == self$actions$row & self$j == self$actions$col)
+    
+    return(!to_ret)
   },
   all_states = function(){
     # possibly buggy but simple way to get all states
     # either a position that has possible next actions
     # or a position that yields a reward
     # self$actions
-    all_states <- full_join(self$actions[,c(1:2)], self$rewards[,c(1,2)])
+    all_states <- full_join(self$actions[, c(1:2)], self$rewards[,c(1,2)])
     return(all_states)
   }
 )
@@ -114,8 +115,8 @@ standard_grid <-function(){
   g = Grid$new(3, 4, c(2, 0))
   rewards = data.frame(
     row    = c(0, 1), 
-    col = c(3, 3), 
-    reward = c(1,-3)
+    col    = c(3, 3), 
+    reward = c(1,-1)
   )
   actions = data.frame(
     row = c(0, 0, 0, 1, 1, 2, 2, 2, 2),

@@ -1,12 +1,13 @@
 # https://deeplearningcourses.com/c/artificial-intelligence-reinforcement-learning-in-python
 # https://www.udemy.com/artificial-intelligence-reinforcement-learning-in-python
+
 source('./mdp/grid_world.R')
 source('./mdp/print_functions.R')
 SMALL_ENOUGH = 1e-3 # threshold for convergence
 GAMMA = 0.9
 ALL_POSSIBLE_ACTIONS = c('U', 'D', 'L', 'R')
 VERBOSE = T
-require(glue)
+
 
 
 

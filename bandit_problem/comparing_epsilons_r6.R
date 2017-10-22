@@ -1,6 +1,3 @@
-if(!'pacman' %in% installed.packages()) install.packages('pacman')
-require(pacman)
-p_load(R6, ggplot2, dplyr, magrittr)
 Bandit <- R6Class('Bandit',
                   public = list(
                     initialize = function(m) self$m = m,
@@ -50,7 +47,7 @@ run_experiment_eps <- function(m1, m2, m3, eps, n) {
 
 
 
-require(ggplot2)
+
 c_1  = run_experiment_eps(1.0, 2.0, 3.0, 0.1, 10000)
 c_05 = run_experiment_eps(1.0, 2.0, 3.0, 0.05, 10000)
 c_01 = run_experiment_eps(1.0, 2.0, 3.0, 0.01, 10000)
