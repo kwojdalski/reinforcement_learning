@@ -1,4 +1,19 @@
-play_game <- function(grid, policy, verbose = F){
+random_action <- function(a, possible_actions = ALL_POSSIBLE_ACTIONS){
+   # choose given a with probability 0.5
+   # choose some other a' != a with probability 0.5/3
+   p = runif(1)
+   if(p < 0.5){
+     return(a)
+   }else{
+     possible_actions <- possible_actions[possible_actions != a]
+     return(base::sample(possible_actions, 1))
+   }
+ }
+  
+    
+    
+    
+play_game <- function(grid, policy, verbose = F, windy = F){
   # returns a list of states and corresponding returns
   
   assert_that(all(c('row','col','action') %in% colnames(policy)), msg = 'Wrong colnames. They should be "row", "col", and "action"')
@@ -16,7 +31,11 @@ play_game <- function(grid, policy, verbose = F){
   while (!grid$game_over()){
     
     a = policy$action[policy$row ==s[1] & policy$col == s[2]]
-    r = grid$move(a)
+    if(windy){
+      r = grid$move(random_action(a))
+    } else{
+      r = grid$move(a)
+    }
     s = grid$current_state()
     states_and_rewards <- rbind(states_and_rewards,
                                 data_frame(row = s[1], col = s[2], reward = r))
