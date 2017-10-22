@@ -4,7 +4,7 @@
 SMALL_ENOUGH         = 1e-4
 GAMMA                = 0.9
 ALL_POSSIBLE_ACTIONS = c('U', 'D', 'L', 'R')
-NUMBER_OF_ITERATIONS = seq_len(1000)
+NUMBER_OF_ITERATIONS = seq_len(300)
 # NOTE: this is only policy evaluation, not optimization
 
 
@@ -19,9 +19,9 @@ print_values(grid$rewards, grid)
 
 # state -> action
 policy = data.frame(
-  row    = c(2, 1, 0, 0, 0, 1, 2, 2, 2),
-  col    = c(0, 0, 0, 1, 2, 2, 1, 2, 3),
-  action = c('U','U','R','R','R','R','R','R','U')
+  row    = c(  2,  1,  0,  0,  0,  1,  2,  2,  2),
+  col    = c(  0,  0,  0,  1,  2,  2,  1,  2,  3),
+  action = c('U','U','R','R','R','U','L','U','L')
 )
 
 # initialize V(s) and returns
@@ -46,6 +46,7 @@ returns_coord <- attr(returns, 'split_labels')
 #### INITALIZE GAMES
 
 for(t in NUMBER_OF_ITERATIONS){
+  
   states_and_returns <- play_game(grid, policy, windy = T)
   seen_states <- data.frame(row = numeric(0), col = numeric(0))
   
@@ -64,6 +65,7 @@ for(t in NUMBER_OF_ITERATIONS){
     
   })
   seen_states <- V[!is.na(V$value),c('row','col')] 
+  if(t %% 20 == 0) print(t)
 }
 
 print_values(V, grid)
