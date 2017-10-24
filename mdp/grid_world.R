@@ -12,95 +12,102 @@ parse_position <- function(start){
 
 
 Grid <- R6Class("Grid", public = list(
-  initialize = function(width, height, start) {
-    
-    self$width  = width
-    self$height = height
-    self$i      = parse_position(start)[i]
-    self$j      = parse_position(start)[j]
-    
-  }, width= NULL, height = NULL, i = NULL, j = NULL, rewards = NULL, actions = NULL,
-  set_state = function(s, verbose = F){
-    
-    self$i = parse_position(s)[1]
-    self$j = parse_position(s)[2]
-  },
-  parse_position = function(s){
-    parse_position(s)
-  },
-  set = function(rewards, actions){
-    self$rewards = rewards
-    self$actions = actions # possible actions
-  },
-  rewards_update = function(update){
-    # update is a data frame of updated values
-    plyr::adply(update, 1, function(x){
-      reward_index <- self$rewards$row == x$row & x$col == self$rewards$col
-      if(any(reward_index)) {
-        self$rewards[reward_index, ] <- x
-      }else{
-        self$rewards %<>% add_row(row = x$row, col = x$col, reward = x$reward)
+    initialize = function(width, height, start) {
+      
+      self$width  = width
+      self$height = height
+      self$i      = parse_position(start)[i]
+      self$j      = parse_position(start)[j]
+      
+    }, width= NULL, height = NULL, i = NULL, j = NULL, rewards = NULL, actions = NULL,
+    set_state = function(s, verbose = F){
+      
+      self$i = parse_position(s)[1]
+      self$j = parse_position(s)[2]
+    },
+    parse_position = function(s){
+      parse_position(s)
+    },
+    set = function(rewards, actions){
+      self$rewards = rewards
+      self$actions = actions # possible actions
+    },
+    rewards_update = function(update){
+      # update is a data frame of updated values
+      plyr::adply(update, 1, function(x){
+        reward_index <- self$rewards$row == x$row & x$col == self$rewards$col
+        if(any(reward_index)) {
+          self$rewards[reward_index, ] <- x
+        }else{
+          self$rewards %<>% add_row(row = x$row, col = x$col, reward = x$reward)
+        }
+        
+      })
+      
+      
+    },
+    current_state = function(){
+      
+      return(c(self$i, self$j))
+    },
+    is_terminal = function(s){
+      return((!s %in% self$actions))
+    },
+    move = function(action){
+      avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j,'avail_actions']} %>% unlist()
+      if(action %in% avail_actions){
+        self$i <- action %>% purrr::when(. == 'U' ~ self$i - 1, 
+                                         . == 'D' ~ self$i + 1,
+                                                 ~ self$i)
+        self$j <- action %>% purrr::when(. == 'R' ~ self$j + 1,
+                                         . == 'L' ~ self$j - 1,
+                                          ~ self$j)
+        #check if legal move
+        # if not it returns the same values self$i = self$i and self$j = self$j.
       }
       
-    })
-    
-    
-  },
-  current_state = function(){
-    
-    return(c(self$i, self$j))
-  },
-  is_terminal = function(s){
-    return((!s %in% self$actions))
-  },
-  move = function(action){
-    avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j,'avail_actions']} %>% unlist()
-    if(action %in% avail_actions){
-      self$i <- action %>% purrr::when(. == 'U' ~ self$i - 1, 
-                                       . == 'D' ~ self$i + 1,
-                                               ~ self$i)
-      self$j <- action %>% purrr::when(. == 'R' ~ self$j + 1,
-                                       . == 'L' ~ self$j - 1,
-                                        ~ self$j)
-      #check if legal move
-      # if not it returns the same values self$i = self$i and self$j = self$j.
+      to_ret <- self$rewards %>% {.$reward[.$row == self$i & .$col == self$j]} %>% 
+        when(length(.) == 0 ~ 0,
+             length(.) >= 1 ~ .)
+      
+      return(to_ret)
+    },
+    undo_move = function(action){
+        self$i <- action %>% purrr::when(. == 'U' ~ self$i + 1, 
+                                         . == 'D' ~ self$i - 1,
+                                                  ~ self$i)
+        self$j <- purrr::when(. == 'R' ~ self$j - 1,
+                              . == 'L' ~ self$j + 1,
+                                       ~ self$j)
+        # raise an exception if we arrive somewhere we shouldn't be
+        # should never happen
+        assertthat::assert_that(self$current_state() %in% self$all_states())
+    },
+    game_over = function(){
+      # returns true if game is over, else false
+      # true if we are in a state where no actions are possible
+      to_ret <- any(self$i == self$actions$row & self$j == self$actions$col)
+      
+      return(!to_ret)
+    },
+    all_states = function(){
+      # possibly buggy but simple way to get all states
+      # either a position that has possible next actions
+      # or a position that yields a reward
+      # self$actions
+      all_states <- full_join(self$actions[, c(1:2)], self$rewards[,c(1,2)])
+      return(all_states)
+    },
+    keys = function(x){
+      browser()
+      assert_that("row" %in% colnames(x),
+                  "col" %in% colnames(x),
+                  msg = 'No keys for the object')
     }
-    
-    to_ret <- self$rewards %>% {.$reward[.$row == self$i & .$col == self$j]} %>% 
-      when(length(.) == 0 ~ 0,
-           length(.) >= 1 ~ .)
-    
-    return(to_ret)
-  },
-  undo_move = function(action){
-      self$i <- action %>% purrr::when(. == 'U' ~ self$i + 1, 
-                                       . == 'D' ~ self$i - 1,
-                                                ~ self$i)
-      self$j <- purrr::when(. == 'R' ~ self$j - 1,
-                            . == 'L' ~ self$j + 1,
-                                     ~ self$j)
-      # raise an exception if we arrive somewhere we shouldn't be
-      # should never happen
-      assertthat::assert_that(self$current_state() %in% self$all_states())
-  },
-  game_over = function(){
-    # returns true if game is over, else false
-    # true if we are in a state where no actions are possible
-    to_ret <- any(self$i == self$actions$row & self$j == self$actions$col)
-    
-    return(!to_ret)
-  },
-  all_states = function(){
-    # possibly buggy but simple way to get all states
-    # either a position that has possible next actions
-    # or a position that yields a reward
-    # self$actions
-    all_states <- full_join(self$actions[, c(1:2)], self$rewards[,c(1,2)])
-    return(all_states)
-  }
+      
+  )
 )
-)
-
+grid <- standard_grid()
 
 standard_grid <-function(){
   # define a grid that describes the reward for arriving at each state
