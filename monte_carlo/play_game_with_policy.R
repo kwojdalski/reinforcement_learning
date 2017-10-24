@@ -8,7 +8,7 @@ max_dict <- function(d, col = NA) {
 }
 max_dict(V, col = "value")
 
-play_game(grid, policy)
+
 
 play_game <- function(grid, policy, verbose = F, windy = F){
   # returns a list of states and corresponding returns
@@ -31,13 +31,14 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   # generating an episode
   while (TRUE){
     
-    old_s = grid$current_state()
-    r = grid$move(random_action(a))
-    s = grid$current_state()
-    is_seen = if(nrow(seen_states)) s[1] == seen_states$row & s[2] == seen_states$col else FALSE
+    old_s <- grid$current_state()
+    r     <- grid$move(random_action(a))
+    s     <- grid$current_state()
+    is_seen <- if(nrow(seen_states)) s[1] == seen_states$row & s[2] == seen_states$col else FALSE
     if(any(is_seen)) {
       # if the episode is seen more than once, and we assume the environment to be constant, assign it a highly negative reward to avoid that space in the future
       sar %<>% add_row(row = s[1], col = s[2], action = NA, reward = -100)
+      break
     } else if(grid$game_over()){
       sar %<>% add_row(row = s[1], col = s[2], action = NA, reward = r) # game over so we do not take any action
       break # break when the game ends
@@ -52,6 +53,7 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   # calculate the returns by working backwards from the terminal state
   G        <-  0
   first <- TRUE
+  
   sa_ret <- adply(arrange(sar, -row_number()), 1, function(x){
       
     to_ret <- if(first) {
@@ -62,10 +64,12 @@ play_game <- function(grid, policy, verbose = F, windy = F){
     G <<- r + GAMMA * G
     return(to_ret)
   }, .id = NULL)
-  sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, return)
+  
+  sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, action, return)
+  
   return(sa_ret)
 }
 
-#states_and_returns <- play_game(grid, policy)
+states_and_returns <- play_game(grid, policy)
 
 

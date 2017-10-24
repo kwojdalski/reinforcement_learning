@@ -1,5 +1,7 @@
-  grid = negative_grid(step_cost=-0.9)
-
+p_load(prodlim)  
+grid = negative_grid(step_cost=-0.9)
+  
+  
   
   # print rewards
   print("rewards:")
@@ -15,7 +17,7 @@
   Q_ = data.frame(row = numeric(0), col = numeric(0), action = numeric(0), reward = numeric(0))
   # dictionary of state -> list of returns we've received
   
-  states = grid$all_states()
+  states <- grid$all_states()
   for (s in 1:nrow(states)){
     state_idx <- states[s,]$row == grid$actions$row & states[s,]$col == grid$actions$col
     
@@ -28,73 +30,56 @@
         } else {
           Q_ <- bind_rows(Q_, Q_[nrow(Q_),]); Q_[nrow(Q_), "action"] <- a
         }
-          
           #returns[(s,a)] = []
       }
-    }else{
+    } else {
       #pass
     }
     
   }
   Q_$reward <- 0# not a terminal state
-  returns <- list()
+  
   returns <- plyr::alply(Q_, 1, function(x){
     # TO DO 0
      
   })
   
   
-  
-  
-  
-  
-  
-  
-  
-  
   # repeat until convergence
   deltas = c()
-  for (t in seq_len(200)){
-    if (t %% 100 == 0) print(t)
-    browser()
+  for (t in seq_len(20)){
+    if (t %% 10 == 0) print(t)
     # generate an episode using pi
+   
     biggest_change <-  0
-    sa_ret = play_game(grid, policy)
-    seen_sa_pairs = c()
+    sa_ret         <- play_game(grid, policy) # ADD ACTIONS IN OUTPUT
+    seen_sa_pairs = data.frame(row = numeric(0), col = numeric(0), action = character(0))
     for(i in 1:nrow(sa_ret)){
       # check if we have already seen s
       # called "first-visit" MC policy evaluation
-      sa = sa_ret[i, c('row', 'col')]
-      if(!sa %in% seen_sa_pairs){
-        old_q = Q_[sa_ret$row == Q_$row & sa_ret$col == Q_$col & sa_ret$action == Q_$action, 'reward'] # sa_ret must return action
-        browser()
-        returns
-        Q_[s][a] = np.mean(returns[sa])
-        biggest_change = max(biggest_change, np.abs(old_q - Q_[s][a]))
-        seen_state_action_pairs.add(sa)
+      sa = sa_ret[i, c('row', 'col', 'action')]
+      if(nrow(seen_sa_pairs) == 0 || is.na(row.match(sa , seen_sa_pairs))){
+        q_idx <- sa$row == Q_$row & sa$col == Q_$col & sa$action == Q_$action
+        old_q = Q_[q_idx, 'reward'] # sa_ret must return action
+        returns_ls_idx <- sa$row == attr(returns, 'split_labels')$row & sa$col == attr(returns, 'split_labels')$col & sa$action == attr(returns, 'split_labels')$action
+        returns[[which(returns_ls_idx)]] %<>% c(sa_ret[i, 'return'])
+        
+        # New Q
+        Q_[q_idx, 'reward'] = mean(returns[[which(returns_ls_idx)]], na.rm = T)
+        biggest_change = max(biggest_change, abs(old_q - Q_[q_idx, 'reward']))
+        
+        seen_sa_pairs %<>% union_all(sa)
       }
+      deltas%<>%c(biggest_change)
         
       
     }
-      
-    # deltas.append(biggest_change)
-    # 
-    # # update policy
-    # for s in policy.keys():
-    #   policy[s] = max_dict(Q_[s])[0]
-    # 
-    # plot(deltas)
-    # 
-    # 
+  }
+  # P
+  max_dict()
+      max_dict(Q_)
     print ("final policy:")
     print_policy(policy, grid)
-    # 
-    # # find V
-    # V = {}
-    # for s, Qs in Q_.iteritems():
-    #   V[s] = max_dict(Q_[s])[1]
-    # 
     print( "final values:")
     print_values(V, grid)
-  }
     
