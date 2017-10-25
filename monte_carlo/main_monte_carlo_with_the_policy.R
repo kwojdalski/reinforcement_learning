@@ -1,5 +1,5 @@
 p_load(prodlim)  
-grid = negative_grid(step_cost=-0.9)
+grid = negative_grid(step_cost = -0.9)
   
   
   
@@ -28,7 +28,8 @@ grid = negative_grid(step_cost=-0.9)
         if(is.na(Q_[nrow(Q_),'action'])){
           Q_[nrow(Q_),'action'] <- a
         } else {
-          Q_ <- bind_rows(Q_, Q_[nrow(Q_),]); Q_[nrow(Q_), "action"] <- a
+          Q_ <- bind_rows(Q_, Q_[nrow(Q_),])
+          Q_[nrow(Q_), "action"] <- a
         }
           #returns[(s,a)] = []
       }
@@ -37,26 +38,24 @@ grid = negative_grid(step_cost=-0.9)
     }
     
   }
-  Q_$reward <- 0# not a terminal state
   
-  returns <- plyr::alply(Q_, 1, function(x){
-    # TO DO 0
-     
-  })
+  
+  Q_$reward <- 0# not a terminal state
+  returns <- plyr::alply(Q_, 1, function(x){})
   
   
   # repeat until convergence
   deltas = c()
-  for (t in seq_len(20)){
-    if (t %% 10 == 0) print(t)
+  for (t in seq_len(2000)){
+    if (t %% 50 == 0) print(t)
     # generate an episode using pi
-   
     biggest_change <-  0
     sa_ret         <- play_game(grid, policy) # ADD ACTIONS IN OUTPUT
     seen_sa_pairs = data.frame(row = numeric(0), col = numeric(0), action = character(0))
     for(i in 1:nrow(sa_ret)){
       # check if we have already seen s
       # called "first-visit" MC policy evaluation
+      i <- 1
       sa = sa_ret[i, c('row', 'col', 'action')]
       if(nrow(seen_sa_pairs) == 0 || is.na(row.match(sa , seen_sa_pairs))){
         q_idx <- sa$row == Q_$row & sa$col == Q_$col & sa$action == Q_$action
@@ -70,16 +69,29 @@ grid = negative_grid(step_cost=-0.9)
         
         seen_sa_pairs %<>% union_all(sa)
       }
-      deltas%<>%c(biggest_change)
-        
-      
     }
+    deltas%<>%c(biggest_change)
+    
+    # update policy
+    
+    old_policy <-  policy
+    for(i in 1:nrow(policy)){
+      
+      q_idx <- which(policy[i, 'row'] == Q_$row & policy[i, 'col'] == Q_$col)
+      print(Q_)
+    
+      policy[i, ] <- max_dict(Q_[q_idx,], val_col = 'reward', coord_col = c('row', 'col', 'action'))
+      
+    } 
+      
+    #if(!identical(old_policy, policy)) print(policy)
+    
   }
-  # P
+returns  
   max_dict()
       max_dict(Q_)
     print ("final policy:")
     print_policy(policy, grid)
     print( "final values:")
-    print_values(V, grid)
+    print_values(Q_, grid)
     

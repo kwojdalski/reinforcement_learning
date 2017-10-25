@@ -1,12 +1,13 @@
-max_dict <- function(d, col = NA) {
-  assert_that(!is.na(col), msg = 'Pick a column with col argument. Currently, it is empty')
+max_dict <- function(d, val_col = NA, coord_col = c('row', 'col', 'action')) {
+  assert_that(!is.na(val_col), msg = 'Pick a column with col argument. Currently, it is empty')
+  assert_that(val_col %in% colnames(d), msg = 'Pick a proper val col')
+  assert_that(all(coord_col %in% colnames(d)), msg = 'Pick proper coord col(s)')
   
-  
-  max_coord <- d[which.max(d[[col]]),c('row', 'col')]
-  max_value <- d[[col]][which.max(d[[col]])]
+  max_coord <- d[which.max(d[[val_col]]), coord_col]
+  max_value <- d[[val_col]][which.max(d[[val_col]])]
   return(data.frame(max_coord, max_value))
 }
-max_dict(V, col = "value")
+
 
 
 
@@ -18,7 +19,7 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   # reset game to start at a random position
   # we need to do this, because given our current deterministic policy
   # we would never end up at certain states, but we still want to measure their value
-  grid = standard_grid()
+  
   start_states = grid$actions[, c('row', 'col')]
   start_idx    = sample.int(nrow(start_states), 1)
   grid$set_state(start_states[start_idx,])
@@ -52,24 +53,23 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   
   # calculate the returns by working backwards from the terminal state
   G        <-  0
-  first <- TRUE
+  first    <- TRUE
+  
   
   sa_ret <- adply(arrange(sar, -row_number()), 1, function(x){
-      
+    
     to_ret <- if(first) {
-      first <<- FALSE; NULL
+      first <<- FALSE
+      NULL
     } else  {
       data.frame(row = x[1] , col = x[2], return = G) 
     }
-    G <<- r + GAMMA * G
+    G <<- x$reward + GAMMA * G
     return(to_ret)
   }, .id = NULL)
-  
   sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, action, return)
   
   return(sa_ret)
 }
-
-states_and_returns <- play_game(grid, policy)
 
 
