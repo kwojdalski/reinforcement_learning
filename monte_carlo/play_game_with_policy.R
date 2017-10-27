@@ -1,14 +1,25 @@
-max_dict <- function(d, val_col = NA, coord_col = c('row', 'col', 'action')) {
+max_dict <- function(d, val_col = NA, coord_col = c('row', 'col', 'action'), 
+                     group_by = NA, val_col_ = NA) {
   assert_that(!is.na(val_col), msg = 'Pick a column with col argument. Currently, it is empty')
   assert_that(val_col %in% colnames(d), msg = 'Pick a proper val col')
   assert_that(all(coord_col %in% colnames(d)), msg = 'Pick proper coord col(s)')
+  if(any(is.na(group_by))){
+    max_coord <- d[which.max(d[[val_col]]), coord_col]
+    max_value <- d[[val_col]][which.max(d[[val_col]])]  
+    ret <- data.frame(max_coord, max_value)
+  }else{
+    to_sum <- enquo(val_col_)
+    ret <- d %>% group_by_(.dots = group_by) %>% 
+      summarize(reward = max(!!to_sum))
+  }
   
-  max_coord <- d[which.max(d[[val_col]]), coord_col]
-  max_value <- d[[val_col]][which.max(d[[val_col]])]
-  return(data.frame(max_coord, max_value))
+  return(ret)
 }
 
-
+max_dict(Q_, coord_col = c('row', 'col'), 
+         val_col = 'reward', 
+         group_by = c('row', 'col'),
+         val_col_ = reward)
 
 
 play_game <- function(grid, policy, verbose = F, windy = F){
@@ -38,25 +49,26 @@ play_game <- function(grid, policy, verbose = F, windy = F){
     is_seen <- if(nrow(seen_states)) s[1] == seen_states$row & s[2] == seen_states$col else FALSE
     if(any(is_seen)) {
       # if the episode is seen more than once, and we assume the environment to be constant, assign it a highly negative reward to avoid that space in the future
-      sar %<>% add_row(row = s[1], col = s[2], action = NA, reward = -100)
+      sar %<>% rbind(data.frame(row = s[1], col = s[2], action = NA, reward = -100))
       break
     } else if(grid$game_over()){
-      sar %<>% add_row(row = s[1], col = s[2], action = NA, reward = r) # game over so we do not take any action
+      # game over so we do not take any action
+      sar %<>% rbind(data.frame(row = s[1], col = s[2], action = NA, reward = r)) 
       break # break when the game ends
     } else{ 
       # probably the most frequent scenario
-      a = filter(policy, row == s[1], col == s[2])%$%action
-      sar %<>% add_row(row = s[1], col = s[2], action = a, reward = r)
+      a = policy[policy$row == s[1] & policy$col == s[2], 'action']
+      sar %<>% rbind(data.frame(row = s[1], col = s[2], action = a, reward = r))
     }
-    seen_states %<>% add_row(row = s[1], col = s[2])
+    seen_states %<>% rbind(data.frame(row = s[1], col = s[2]))
   }
   
   # calculate the returns by working backwards from the terminal state
   G        <-  0
   first    <- TRUE
   
-  
-  sa_ret <- adply(arrange(sar, -row_number()), 1, function(x){
+  browser()
+  sa_ret <- adply(sar[rev(seq_len(nrow(sar))),], 1, function(x){ # TO CHECK 
     
     to_ret <- if(first) {
       first <<- FALSE
@@ -67,7 +79,8 @@ play_game <- function(grid, policy, verbose = F, windy = F){
     G <<- x$reward + GAMMA * G
     return(to_ret)
   }, .id = NULL)
-  sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, action, return)
+  sa_ret <- sa_ret[rev(order(sa_ret[,1])),]
+  #sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, action, return)
   
   return(sa_ret)
 }
