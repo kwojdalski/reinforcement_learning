@@ -35,8 +35,8 @@ while (TRUE){
   
   
   new_V <- plyr::adply(states, 1, function(x){
-    state_index <- which(x$row == grid$actions$row & x$col == grid$actions$col)
-    value_index <- which(x$row == V$row & x$col == V$col)
+    state_index <- row_matches(x, grid$actions)
+    value_index <- row_matches(x, V)
     
     old_v = V[value_index, 'value']
     

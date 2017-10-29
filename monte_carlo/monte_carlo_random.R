@@ -30,8 +30,10 @@ returns = c() # dictionary of state -> list of returns we've received
 states = grid$all_states()
 
 returns <- plyr::alply(states, 1, function(x){
-  action_idx <- x$row == grid$actions$row & x$col == grid$actions$col
-  value_idx  <- x$row == V$row & x$col == V$col
+  action_idx <- row_matches(x, grid$actions)
+  
+  value_idx  <- row_matches(x, V)
+  #value_idx  <- row_matches(x, V)
   if(any(action_idx)){
     to_ret <- c(return = numeric(0)) # list of tuples of (state, reward)
     return(to_ret)
@@ -52,9 +54,13 @@ for(t in NUMBER_OF_ITERATIONS){
   
   a_ply(states_and_returns, 1, function(x){
     
-    seen_states_idx <- if(nrow(seen_states)) x$row == seen_states$row & x$col == seen_states$col else FALSE
-    value_idx <- x$row == V$row & x$col == V$col
-    ret_idx <- which(x$row == returns_coord$row & x$col ==returns_coord$col)
+    seen_states_idx <- if(nrow(seen_states)) row_matches(x, seen_states) else FALSE
+      
+    
+    
+    
+    value_idx <- row_matches(x, V)
+    ret_idx <- row_matches(x, returns_coord)
     # check if we have already seen s
     # called "first-visit" MC policy evaluation
     if(!any(seen_states_idx)){
@@ -71,5 +77,10 @@ for(t in NUMBER_OF_ITERATIONS){
 print_values(V, grid)
 print_policy(policy, grid)
 
-
-
+x$row == seen_states$row & x$col == seen_states$col
+row.match()
+?row.match
+tab <- rbind(data.frame(num=1:26,abc=letters),data.frame(num=1:26,abc=letters))
+x <- c(3,"c")
+row.match(x,tab)
+debugonce(row.match)

@@ -39,8 +39,8 @@ policy <- by_row(grid$actions,
 V <- plyr::adply(states, 1, function(x){
   
   
-  state_index <- which(x$row == grid$actions$row & x$col == grid$actions$col)
-  if(any(state_index)){
+  state_idx <- row_matches(x, grid$actions)
+  if(any(state_idx)){
     x$value <- runif(1)
   }else{
     x$value = 0
@@ -59,21 +59,21 @@ while(TRUE){
   while(TRUE){
     biggest_change <- 0
     new_V <- plyr::adply(states, 1, function(x){
-      policy_index <- which(x$row == policy$row & x$col == policy$col)
-      value_index <- which(x$row == V$row & x$col == V$col)
+      policy_idx <- which(x$row == policy$row & x$col == policy$col)
+      value_idx <- which(x$row == V$row & x$col == V$col)
       
       
       
       # V(s) only has value if it's not a terminal state
-      if(any(policy_index)){
-          a <- policy[policy_index,]$action
+      if(any(policy_idx)){
+          a <- policy[policy_idx,]$action
           
           grid$set_state(x)
           r = grid$move(a)
           
           new_v = r + GAMMA * filter(V, row == grid$current_state()[1], col == grid$current_state()[2])%$%value
           
-        #biggest_change = max(biggest_change, abs(old_v - V[value_index, 'value']))
+        #biggest_change = max(biggest_change, abs(old_v - V[value_idx, 'value']))
       }
       return(cbind(x, value = new_v))
     })
@@ -94,10 +94,10 @@ while(TRUE){
   is_policy_converged <- TRUE
   old_policy <- policy
   policy <- plyr::adply(states, 1, function(x){
-    policy_index <- which(x$row == policy$row & x$col == policy$col)
+    policy_idx <- row_matches(x, policy)
     
-    if(any(policy_index)){
-      old_a <- policy$action[policy_index]        # old action to replace
+    if(any(policy_idx)){
+      old_a <- policy$action[policy_idx]        # old action to replace
       new_a <- NA                                 # new action, yet to be set
       best_value <- -Inf                           
       for(a in ALL_POSSIBLE_ACTIONS){
@@ -109,10 +109,10 @@ while(TRUE){
           new_a  = a
         }
       }
-      policy$action[policy_index] <- new_a
+      policy$action[policy_idx] <- new_a
       
     }
-    return(policy[policy_index,])
+    return(policy[policy_idx,])
   })
   
   if(!identical(old_policy$action, policy$action)) {

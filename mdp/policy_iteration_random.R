@@ -41,8 +41,8 @@ states <- grid$all_states()
 
 V <- plyr::adply(states, 1, function(x){
   
-  state_index <- which(x$row == grid$actions$row & x$col == grid$actions$col)
-  if(any(state_index)){
+  state_idx <- row_matches(x, grid$actions)
+  if(any(state_idx)){
     x$value <- runif(1)
   }else{
     x$value = 0
@@ -60,16 +60,14 @@ while(TRUE){
   while(TRUE){
     biggest_change <- 0
     new_V <- plyr::adply(states, 1, function(x){
-      policy_index <- which(x$row == policy$row & x$col == policy$col)
-      value_index <- which(x$row == V$row & x$col == V$col)
-      
-      
+      policy_idx <- row_matches(x, policy)
+      value_idx  <- row_matches(x, V)
       
       # V(s) only has value if it's not a terminal state
-      if(any(policy_index)){
+      if(any(policy_idx)){
         for(a in ALL_POSSIBLE_ACTIONS){
           
-          if(a == policy$action[policy_index]){
+          if(a == policy$action[policy_idx]){
             p = 0.5
           } else {
             p = 0.5/3
@@ -100,10 +98,10 @@ while(TRUE){
   is_policy_converged <- TRUE
   old_policy <- policy
   policy <- plyr::adply(states, 1, function(x){
-    policy_index <- which(x$row == policy$row & x$col == policy$col)
+    policy_idx <- row_matches(x, policy)
     
-    if(any(policy_index)){
-      old_a <- policy$action[policy_index]        # old action to replace
+    if(any(policy_idx)){
+      old_a <- policy$action[policy_idx]        # old action to replace
       new_a <- NA                                 # new action, yet to be set
       best_value <- -Inf                           
       for(a in ALL_POSSIBLE_ACTIONS){
@@ -126,10 +124,10 @@ while(TRUE){
         }
         
       }
-      policy$action[policy_index] <- new_a  
+      policy$action[policy_idx] <- new_a  
       
     }
-    return(policy[policy_index,])
+    return(policy[policy_idx,])
   })
   
   if(!identical(old_policy$action, policy$action)) {

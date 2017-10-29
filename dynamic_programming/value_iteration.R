@@ -39,9 +39,8 @@ states <- grid$all_states()
 
 V <- plyr::adply(states, 1, function(x){
   
-  
-  state_index <- which(x$row == grid$actions$row & x$col == grid$actions$col)
-  if(any(state_index)){
+  state_idx <- row_matches(x, grid$actions)
+  if(any(state_idx)){
     x$value <- runif(1)
   }else{
     x$value = 0
@@ -61,11 +60,11 @@ rm(new_V)
     biggest_change <- 0
     new_V <- plyr::adply(states, 1, function(x){
       
-      policy_index <- which(x$row == policy$row & x$col == policy$col)
-      value_index <- which(x$row == V$row & x$col == V$col)
+      policy_idx <- row_matches(x, policy)
+      value_idx <- row_matches(x, V)
       
       # V(s) only has value if it's not a terminal state
-      if(any(policy_index)){
+      if(any(policy_idx)){
         new_v = -Inf
         for(a in ALL_POSSIBLE_ACTIONS){
           grid$set_state(x)
@@ -76,7 +75,7 @@ rm(new_V)
         }
       }
        
-        #biggest_change = max(biggest_change, abs(old_v - V[value_index, 'value']))
+        #biggest_change = max(biggest_change, abs(old_v - V[value_idx, 'value']))
       return(cbind(x, value = new_v))
     })
     

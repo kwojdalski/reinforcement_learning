@@ -20,17 +20,17 @@ while (TRUE){
   biggest_change = 0
   new_V <- plyr::adply(states, 1, function(x){
     
-    state_index <- which(x$row == grid$actions$row & x$col == grid$actions$col)
-    value_index <- which(x$row == V$row & x$col == V$col)
+    state_idx <- row_matches(x, grid$actions)
+    value_idx <- row_matches(x, V)
     
-    old_v = V[value_index, 'value']
+    old_v = V[value_idx, 'value']
     
     
     # V(s) only has value if it's not a terminal state
     
-    if(any(state_index)){
+    if(any(state_idx)){
       new_v = 0 # we will accumulate the answer
-      avail_actions <- unlist(grid$actions[state_index,]$avail_actions) # TO DO
+      avail_actions <- unlist(grid$actions[state_idx,]$avail_actions) # TO DO
       p_a   = 1.0 / length(avail_actions) # each action has equal probability
       for(a in avail_actions){
         a = policy$reward[policy$row ==x$row & policy$col == x$col]
@@ -46,11 +46,11 @@ while (TRUE){
                                                   col == grid$current_state()[2])%$%value)
       }
       
-      V[value_index, 'value'] = new_v
-      biggest_change = max(biggest_change, abs(old_v - V[value_index, 'value']))
+      V[value_idx, 'value'] = new_v
+      biggest_change = max(biggest_change, abs(old_v - V[value_idx, 'value']))
     }
     
-    return(V[value_index, ])
+    return(V[value_idx, ])
   })
   biggest_change <- max(abs(new_V$value - V$value))
   V <- new_V

@@ -1,6 +1,6 @@
-ITERATIONS = 100
+ITERATIONS = 1000
 p_load(prodlim)  
-grid = negative_grid(step_cost = -0.9)
+grid = negative_grid(step_cost = -0.1)
   
   
   
@@ -17,7 +17,7 @@ grid = negative_grid(step_cost = -0.9)
   # initialize Q_(s,a) and returns
   Q_ = data.frame(row = numeric(0), col = numeric(0), action = numeric(0), reward = numeric(0))
   # dictionary of state -> list of returns we've received
-profvis({}
+
   states <- grid$all_states()
   for (s in 1:nrow(states)){
     state_idx <- states[s,]$row == grid$actions$row & states[s,]$col == grid$actions$col
@@ -51,12 +51,12 @@ profvis({}
     if (t %% 50 == 0) print(t)
     # generate an episode using pi
     biggest_change <- 0
+    
     sa_ret         <- play_game(grid, policy) # ADD ACTIONS IN OUTPUT
     seen_sa_pairs = data.frame(row = numeric(0), col = numeric(0), action = character(0))
     for(i in 1:nrow(sa_ret)){
       # check if we have already seen s
       # called "first-visit" MC policy evaluation
-      i <- 1
       sa = sa_ret[i, c('row', 'col', 'action')]
       if(nrow(seen_sa_pairs) == 0 || is.na(row.match(sa , seen_sa_pairs))){
         q_idx <- sa$row == Q_$row & sa$col == Q_$col & sa$action == Q_$action
@@ -71,7 +71,9 @@ profvis({}
         seen_sa_pairs %<>% union_all(sa)
       }
     }
-    deltas%<>%c(biggest_change)
+    deltas %<>% c(biggest_change)
+    
+    
     
     # update policy
     
@@ -84,28 +86,21 @@ profvis({}
       policy[i, ] <- max_dict(Q_[q_idx,], val_col = 'reward', coord_col = c('row', 'col', 'action'))
       
     } 
-      
-    #if(!identical(old_policy, policy)) print(policy)
-    
+    #if(t %% 100 == 0 ) browser()
   }
-})
+
   
   print ("final policy:")
   print_policy(policy, grid)
   print( "final values:")
-  colnames(Q_)
-  max_dict(Q_, coord_col = c('row', 'col', 'action'), 
+  
+  q_max <- max_dict(Q_, coord_col = c('row', 'col', 'action'), 
            group_by = c('row', 'col'), 
            val_col_ = reward,
            val_col = 'reward')
-
     
   
   
   
-  require(profvis)
-  profvis(for(i in 1:100) sa_ret <- arrange(sa_ret, -row_number()) )
-  
-  
-  ?rev
+  returns
   

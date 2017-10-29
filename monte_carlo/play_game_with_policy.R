@@ -42,9 +42,9 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   seen_states <- data_frame(row = numeric(0), col = numeric(0))
   # generating an episode
   while (TRUE){
-    
+    #if(identical(grid$current_state(), c(1,2))) browser()
     old_s <- grid$current_state()
-    r     <- grid$move(random_action(a))
+    r     <- grid$move(a)
     s     <- grid$current_state()
     is_seen <- if(nrow(seen_states)) s[1] == seen_states$row & s[2] == seen_states$col else FALSE
     if(any(is_seen)) {
@@ -67,7 +67,7 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   G        <-  0
   first    <- TRUE
   
-  browser()
+  
   sa_ret <- adply(sar[rev(seq_len(nrow(sar))),], 1, function(x){ # TO CHECK 
     
     to_ret <- if(first) {
@@ -79,7 +79,9 @@ play_game <- function(grid, policy, verbose = F, windy = F){
     G <<- x$reward + GAMMA * G
     return(to_ret)
   }, .id = NULL)
-  sa_ret <- sa_ret[rev(order(sa_ret[,1])),]
+  sa_ret <- sa_ret[rev(order(as.numeric(row.names(sa_ret)))),]
+  
+  
   #sa_ret <- arrange(sa_ret, -row_number()) %>% select(row, col, action, return)
   
   return(sa_ret)
