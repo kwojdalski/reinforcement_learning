@@ -77,10 +77,4 @@ for(t in NUMBER_OF_ITERATIONS){
 print_values(V, grid)
 print_policy(policy, grid)
 
-x$row == seen_states$row & x$col == seen_states$col
-row.match()
-?row.match
-tab <- rbind(data.frame(num=1:26,abc=letters),data.frame(num=1:26,abc=letters))
-x <- c(3,"c")
-row.match(x,tab)
-debugonce(row.match)
+
