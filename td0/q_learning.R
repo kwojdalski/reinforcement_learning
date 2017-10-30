@@ -1,5 +1,9 @@
 source('./monte_carlo/util.R')
 
+
+
+# Global variables ----------------------------------------------------------------------------
+
 ITERATIONS = 500
 GAMMA      = 0.9
 EPS        = 0.1
@@ -10,9 +14,6 @@ ALL_POSSIBLE_ACTIONS = c('U', 'D', 'L', 'R')
 # print rewards
 print("rewards:")
 print_values(grid$rewards, grid)
-
-# state -> action
-# initialize a random policy
 
 
 policy = data.frame(
@@ -53,8 +54,10 @@ update_counts_sa    <- data.frame(row    = Q_$row,
 
 update_counts <- data.frame(row = numeric(0), col = numeric(0), action = numeric(0), count = numeric(0))
 
+# Setting the values for q (the main part) -------------------------------------------------------------------------
 t      <- 1
 deltas <- 0
+
 for(it in 1:ITERATIONS){
   
   if(it %% 100 == 0){
@@ -93,8 +96,10 @@ for(it in 1:ITERATIONS){
     alpha = ALPHA / update_counts_sa[update_counts_idx, "count"]
     update_counts_sa[update_counts_idx, "count"] %<>% add(0.005)
     old_qsa = Q_[q_idx, 'reward']
-    tmp <- max_dict(Q_[q2_idx,], val_col = 'reward', group_by = c('row', 'col'), val_col_ = reward)
-    max_q_s2_a2 <- tmp$reward[1]# - reward
+    
+    tmp <- max_dict(Q_[q2_idx,], val_col = 'reward')
+    #tmp <- max_dict(Q_[q2_idx,], val_col = 'reward', group_by = c('row', 'col'), val_col_ = reward)
+    max_q_s2_a2 <- tmp$max_value[1]# - reward
     a2          <- tmp$action[1]
     Q_[q_idx, 'reward'] <- Q_[q_idx, 'reward'] + alpha * (r + GAMMA * max_q_s2_a2 - Q_[q_idx, 'reward'])
     
@@ -116,6 +121,7 @@ for(it in 1:ITERATIONS){
   
 }
 
+# Printing the results ------------------------------------------------------------------------
 ggplot(data = NULL, aes(x = seq_along(deltas), y = deltas)) + geom_line()
 
 policy = max_dict(Q_, val_col = 'reward', group_by = c('row', 'col'), val_col_ = reward)[, -4] # - reward
@@ -129,6 +135,6 @@ V_ <- V_[row_matches(grid$actions, V_), ]
 total <- sum(update_counts)
 update_counts$count <- update_counts$count / total
 print_values(update_counts, grid)
-print_policy(policy,        grid)
-print_values(V_,            grid)
+print_policy(policy, grid)
+print_values(V_, grid)
 
