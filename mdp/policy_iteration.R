@@ -81,7 +81,7 @@ while(TRUE){
     
     biggest_change <- max(abs(new_V$value - V$value))
     
-    if(VERBOSE) print(glue("Biggest change in values: {round(biggest_change,5)}"))
+    if(VERBOSE) print(glue("Biggest change in values: {round(biggest_change, 5)}"))
     
     if(biggest_change < SMALL_ENOUGH){
       break

@@ -115,7 +115,6 @@ while(TRUE){
           grid$set_state(x)
           r = grid$move(a2)                          # if not in a set of possible actions it bounces back
           new_v = new_v + p * (r + GAMMA * filter(V, row == grid$current_state()[1], col == grid$current_state()[2])%$%value)
-          
         
         }
         if(new_v > best_value){

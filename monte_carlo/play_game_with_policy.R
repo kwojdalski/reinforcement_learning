@@ -16,13 +16,10 @@ max_dict <- function(d, val_col = NA, coord_col = c('row', 'col', 'action'),
   return(ret)
 }
 
-max_dict(Q_, coord_col = c('row', 'col'), 
-         val_col = 'reward', 
-         group_by = c('row', 'col'),
-         val_col_ = reward)
 
-
-play_game <- function(grid, policy, verbose = F, windy = F){
+play_game <- function(grid, policy, 
+                      exploring_start = TRUE, start_state = c(2, 0),
+                      verbose = F, windy = F){
   # returns a list of states and corresponding returns
   
   assert_that(all(c('row','col','action') %in% colnames(policy)), msg = 'Wrong colnames. They should be "row", "col", and "action"')
@@ -42,12 +39,13 @@ play_game <- function(grid, policy, verbose = F, windy = F){
   seen_states <- data_frame(row = numeric(0), col = numeric(0))
   # generating an episode
   while (TRUE){
-    #if(identical(grid$current_state(), c(1,2))) browser()
     old_s <- grid$current_state()
-    r     <- grid$move(a)
-    s     <- grid$current_state()
-    is_seen <- if(nrow(seen_states)) s[1] == seen_states$row & s[2] == seen_states$col else FALSE
-    if(any(is_seen)) {
+    #if(identical(old_s, c(2,3))) browser()
+    r       <- grid$move(a)
+    s       <- grid$current_state()
+    is_seen <- row_matches(s, seen_states, same_cols = F)
+    
+    if(any(is_seen) & exploring_start){
       # if the episode is seen more than once, and we assume the environment to be constant, assign it a highly negative reward to avoid that space in the future
       sar %<>% rbind(data.frame(row = s[1], col = s[2], action = NA, reward = -100))
       break
@@ -55,9 +53,11 @@ play_game <- function(grid, policy, verbose = F, windy = F){
       # game over so we do not take any action
       sar %<>% rbind(data.frame(row = s[1], col = s[2], action = NA, reward = r)) 
       break # break when the game ends
-    } else{ 
+    } else { 
       # probably the most frequent scenario
-      a = policy[policy$row == s[1] & policy$col == s[2], 'action']
+      
+      policy_idx <- row_matches(s, policy[,c('row', 'col')], same_cols = F)
+      a <- if(exploring_start) policy[policy_idx, 'action'] else random_action(policy[policy_idx, 'action'])
       sar %<>% rbind(data.frame(row = s[1], col = s[2], action = a, reward = r))
     }
     seen_states %<>% rbind(data.frame(row = s[1], col = s[2]))

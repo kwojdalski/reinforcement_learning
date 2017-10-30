@@ -1,36 +1,34 @@
-random_action <- function(a, possible_actions = ALL_POSSIBLE_ACTIONS){
-   # choose given a with probability 0.5
-   # choose some other a' != a with probability 0.5/3
-   p = runif(1)
-   if(p < 0.5){
-     return(a)
-   }else{
-     possible_actions <- possible_actions[possible_actions != a]
-     return(base::sample(possible_actions, 1))
-   }
- }
-  
     
     
     
-play_game <- function(grid, policy, verbose = F, windy = F){
+play_game <- function(grid, policy, exploring_start = T, 
+                      start_state = c(2, 0), windy = F, verbose = F){
   # returns a list of states and corresponding returns
   
-  assert_that(all(c('row','col','action') %in% colnames(policy)), msg = 'Wrong colnames. They should be "row", "col", and "action"')
+  assert_that(all(c('row','col','action') %in% colnames(policy)), 
+              msg = 'Wrong colnames. They should be "row", "col", and "action"')
 
   # reset game to start at a random position
   # we need to do this, because given our current deterministic policy
   # we would never end up at certain states, but we still want to measure their value
   grid = standard_grid()
   start_states = grid$actions[, c('row', 'col')]
-  start_idx    = sample.int(nrow(start_states), 1)
-  grid$set_state(start_states[start_idx,])
+  if(exploring_start){
+    start_idx    = sample.int(nrow(start_states), 1)
+    grid$set_state(start_states[start_idx,])  
+  } else{
+    assert_that(length(start_state) > 0, all(!is.na(start_state)), msg = 'Set proper start_state')
+    start_state <- start_state %>% when(is.data.frame(.) ~ .,
+                                        is.numeric(.)  ~data.frame(row = .[1], col = .[2]))
+    grid$set_state(start_state)  
+  }
+  
   s = grid$current_state()
-  grid$actions
+  
   states_and_rewards = data_frame(row = s[1], col = s[2], reward = 0) # list of tuples of (state, reward)
   while (!grid$game_over()){
-    
-    a = policy$action[policy$row ==s[1] & policy$col == s[2]]
+    policy_idx <- row_matches(s, policy[,1:2], same_cols = F)
+    a = policy$action[policy_idx]
     if(windy){
       r = grid$move(random_action(a))
     } else{

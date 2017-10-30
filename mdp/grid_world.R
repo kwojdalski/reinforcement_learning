@@ -16,8 +16,8 @@ Grid <- R6Class("Grid", public = list(
       
       self$width  = width
       self$height = height
-      self$i      = parse_position(start)[i]
-      self$j      = parse_position(start)[j]
+      self$i      = parse_position(start)[1]
+      self$j      = parse_position(start)[2]
       
     }, width= NULL, height = NULL, i = NULL, j = NULL, rewards = NULL, actions = NULL,
     set_state = function(s, verbose = F){
@@ -54,7 +54,8 @@ Grid <- R6Class("Grid", public = list(
       return((!s %in% self$actions))
     },
     move = function(action){
-      avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j,'avail_actions']} %>% unlist()
+      
+      avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j, 'avail_actions']} %>% unlist()
       if(action %in% avail_actions){
         self$i <- action %>% purrr::when(. == 'U' ~ self$i - 1, 
                                          . == 'D' ~ self$i + 1,
@@ -99,7 +100,7 @@ Grid <- R6Class("Grid", public = list(
       return(all_states)
     },
     keys = function(x){
-      browser()
+      
       assert_that("row" %in% colnames(x),
                   "col" %in% colnames(x),
                   msg = 'No keys for the object')
@@ -107,7 +108,6 @@ Grid <- R6Class("Grid", public = list(
       
   )
 )
-grid <- standard_grid()
 
 standard_grid <-function(){
   # define a grid that describes the reward for arriving at each state

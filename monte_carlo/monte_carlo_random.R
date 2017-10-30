@@ -55,12 +55,8 @@ for(t in NUMBER_OF_ITERATIONS){
   a_ply(states_and_returns, 1, function(x){
     
     seen_states_idx <- if(nrow(seen_states)) row_matches(x, seen_states) else FALSE
-      
-    
-    
-    
-    value_idx <- row_matches(x, V)
-    ret_idx <- row_matches(x, returns_coord)
+    value_idx       <- row_matches(x, V)
+    ret_idx         <- row_matches(x, returns_coord)
     # check if we have already seen s
     # called "first-visit" MC policy evaluation
     if(!any(seen_states_idx)){

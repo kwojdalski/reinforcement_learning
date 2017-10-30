@@ -18,9 +18,22 @@ row_matches <- function(x, table, nomatch = FALSE, cols_to_match = c('row', 'col
   ct <- do.call("paste", c(table[, , drop = FALSE], sep = "\r"))
   to_ret <- which(cx == ct)
   to_ret %<>% when(length(.) > 0  ~ .,
-                  length(.) == 0 ~ nomatch)
+                   length(.) == 0 ~ nomatch)
+  
   return(to_ret)
 }
 
 
+
+random_action <- function(a, eps = 0.5, possible_actions = ALL_POSSIBLE_ACTIONS){
+  # choose given a with probability 0.5
+  # choose some other a' != a with probability 0.5/3
+  p = runif(1)
+  if(p < (1-eps)){
+    return(a)
+  }else{
+    possible_actions <- possible_actions[possible_actions != a]
+    return(base::sample(possible_actions, 1))
+  }
+}
 
