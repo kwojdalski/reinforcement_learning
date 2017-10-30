@@ -1,3 +1,5 @@
+
+
 row_matches <- function(x, table, nomatch = FALSE, cols_to_match = c('row', 'col'), same_cols = T){
   if(same_cols){ assert_that(all(cols_to_match %in% colnames(x)),
                              all(cols_to_match %in% colnames(table)), 
@@ -14,11 +16,13 @@ row_matches <- function(x, table, nomatch = FALSE, cols_to_match = c('row', 'col
     table <- as.data.frame(table)
   if (is.null(dim(x))) 
     x <- as.data.frame(matrix(x, nrow = 1))
+  
   cx <- do.call("paste", c(x[, , drop = FALSE], sep = "\r"))
   ct <- do.call("paste", c(table[, , drop = FALSE], sep = "\r"))
+  
   to_ret <- which(cx == ct)
-  to_ret %<>% when(length(.) > 0  ~ .,
-                   length(.) == 0 ~ nomatch)
+  to_ret <- if(length(to_ret)) to_ret else nomatch
+
   
   return(to_ret)
 }

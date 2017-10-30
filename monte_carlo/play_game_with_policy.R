@@ -9,8 +9,8 @@ max_dict <- function(d, val_col = NA, coord_col = c('row', 'col', 'action'),
     ret <- data.frame(max_coord, max_value)
   }else{
     to_sum <- enquo(val_col_)
-    ret <- d %>% group_by_(.dots = group_by) %>% 
-      summarize(reward = max(!!to_sum))
+    ret <- d %>% group_by_(.dots = group_by) %>%
+      filter(UQE(to_sum) == max(!!to_sum))
   }
   
   return(ret)
