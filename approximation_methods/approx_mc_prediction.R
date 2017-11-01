@@ -71,9 +71,9 @@ for(i in 1:nrow(states)){
     V <- rbind(V, data.frame(s, theta = 0))
   }
 }
-  
 
 
+p_load(forecast)
 
 print("values:")
 print_values(V, grid)

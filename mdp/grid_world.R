@@ -51,7 +51,7 @@ Grid <- R6Class("Grid", public = list(
       return(c(self$i, self$j))
     },
     is_terminal = function(s){
-      return((!s %in% self$actions))
+      return(if(!row_matches(s, self$actions)) T else F)
     },
     move = function(action){
       # avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j, 'avail_actions']} %>% unlist()
