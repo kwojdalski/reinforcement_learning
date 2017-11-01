@@ -54,22 +54,27 @@ Grid <- R6Class("Grid", public = list(
       return((!s %in% self$actions))
     },
     move = function(action){
-      
-      avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j, 'avail_actions']} %>% unlist()
+      # avail_actions <- self$actions %>% {.[.$row == self$i & .$col ==self$j, 'avail_actions']} %>% unlist()
+      avail_actions_idx <- row_matches(c(self$i, self$j), self$actions[,1:2], same_cols = F)
+      avail_actions <- unlist(self$actions[avail_actions_idx, 'avail_actions'])
       if(action %in% avail_actions){
-        self$i <- action %>% purrr::when(. == 'U' ~ self$i - 1, 
-                                         . == 'D' ~ self$i + 1,
-                                                 ~ self$i)
-        self$j <- action %>% purrr::when(. == 'R' ~ self$j + 1,
-                                         . == 'L' ~ self$j - 1,
-                                          ~ self$j)
+        if(action == 'U'){ 
+          self$i <- self$i - 1
+        } else if (action == 'D'){
+          self$i <- self$i +1
+        } else if(action == 'R'){
+          self$j <- self$j + 1 
+        } else if(action == 'L'){
+          self$j <- self$j - 1  
+        }
         #check if legal move
         # if not it returns the same values self$i = self$i and self$j = self$j.
       }
-      
-      to_ret <- self$rewards %>% {.$reward[.$row == self$i & .$col == self$j]} %>% 
-        when(length(.) == 0 ~ 0,
-             length(.) >= 1 ~ .)
+      #to_ret <- self$rewards %>% {.$reward[.$row == self$i & .$col == self$j]}
+      to_ret_idx <- row_matches(c(self$i, self$j), self$rewards[, c('row', 'col')], same_cols = F)
+      to_ret <- self$rewards[to_ret_idx, 'reward']
+      to_ret <- if(length(to_ret) == 0) 0 else to_ret # no_
+             
       
       return(to_ret)
     },
