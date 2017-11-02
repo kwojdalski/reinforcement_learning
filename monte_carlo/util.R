@@ -32,11 +32,12 @@ row_matches <- function(x, table, nomatch = FALSE, cols_to_match = c('row', 'col
 random_action <- function(a, eps = 0.5, possible_actions = ALL_POSSIBLE_ACTIONS){
   # choose given a with probability 0.5
   # choose some other a' != a with probability 0.5/3
+  
   p = runif(1)
   if(p < (1-eps)){
     return(a)
   }else{
-    possible_actions <- possible_actions[possible_actions != a]
+    possible_actions <- possible_actions[possible_actions != as.character(a)]
     return(base::sample(possible_actions, 1))
   }
 }

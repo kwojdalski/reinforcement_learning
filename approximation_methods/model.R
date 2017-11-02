@@ -19,4 +19,3 @@ Model <- R6Class('Model', public = list(
   }
 ))
 
-model <-  Model$new()

@@ -51,6 +51,7 @@ Grid <- R6Class("Grid", public = list(
       return(c(self$i, self$j))
     },
     is_terminal = function(s){
+      
       return(if(!row_matches(s, self$actions)) T else F)
     },
     move = function(action){
