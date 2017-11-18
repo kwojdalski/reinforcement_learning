@@ -46,6 +46,7 @@ Agent = R6Class(
             }
           }
           next_move <- unlist(possible_moves[[base::sample(seq_along(possible_moves), 1, F)]])
+          
         } else {
           # choose the best action based on current values of states
           # loop through all possible moves, get their values
@@ -58,13 +59,13 @@ Agent = R6Class(
               if(env$is_empty(i, j)) {
                 # VALUE CHECKING BEFORE WE MAKE ANY MOVES
                 env$board[i, j] <- self$sym
-                state <- env$get_state()
+                state           <- env$get_state()
                 env$board[i, j] <- 0
                 pos2value[i, j] <- self$V[self$V[, 1] == state, 2][1]
                 if(pos2value[i, j] > best_value){
                   best_value = pos2value[i, j]
                   best_state = state
-                  next_move = c(i, j)
+                  next_move  = c(i, j)
                 }
               }
               
@@ -80,7 +81,7 @@ Agent = R6Class(
             for(i in seq_len(LENGTH)){
               to_print <- paste0(to_print, "\n------------------", '\n')
               for(j in seq_len(LENGTH)){
-                if(env$is_empty(i, j)){
+                if(env$is_empty(i, j)  & r > self$eps){
                   to_print_tmp <- sprintf("%.2f|", pos2value[i,j])
                 }else{
                   to_print_tmp <- if (env$board[i, j] == env$x) "  x |" else if(env$board[i, j] == env$o) "  o |" else "     |"

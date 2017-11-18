@@ -58,5 +58,4 @@ get_state_hash_and_winner = function(env, i = 1, j = 1){
 # }
 
 
-state_winner_triples <- get_state_hash_and_winner(env_game)
 

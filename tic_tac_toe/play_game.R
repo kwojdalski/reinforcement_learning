@@ -31,9 +31,9 @@ play_game <- function(p1, p2, env, draw = F, verbose = F){
   }
   if(verbose){
     outcome <- if(!is.na(env$winner)){
-      sprintf('The winner is: %s', ifelse(env$winner==-1, 'Player one', 'Player two'))
+      sprintf('\nThe winner is: %s', ifelse(env$winner==-1, 'Player one', 'Player two'))
     } else{
-      sprintf('The draw. Noone won.')  
+      sprintf('\nThe draw. Noone won.')  
     }
     
     cat(outcome)

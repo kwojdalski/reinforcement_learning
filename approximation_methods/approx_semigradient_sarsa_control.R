@@ -1,4 +1,4 @@
-ITERATIONS = 10000
+ITERATIONS = 10
 
 # NOTE: if we use the standard grid, there's a good chance we will end up with
 # suboptimal policies
@@ -40,6 +40,7 @@ model = Model_SARSA$new()
 t   = 1.0
 t2  = 1.0
 deltas = c()
+
 for(it in 1:ITERATIONS){
   if(it %% 100 == 0){
     t  <- t + 0.01
@@ -74,7 +75,7 @@ for(it in 1:ITERATIONS){
     
     r  = grid$move(a)
     s2 = grid$current_state()
-    s2 = data_frame(row = s2[1], col = s2[2])
+    s2 = data.frame(row = s2[1], col = s2[2])
     # we need the next action as well since Q(s,a) depends on Q(s',a')
     # if s2 not in policy then it's a terminal state, all Q are 0
     old_theta = model$theta
@@ -98,16 +99,9 @@ for(it in 1:ITERATIONS){
     biggest_change = max(biggest_change, sum(abs(model$theta - old_theta)))
   }
   deltas <- c(deltas, biggest_change)
-    
-  
-  
-  
-  
-  
-  
   
 }
-  
+
 ggplot(data = NULL, aes(x = seq_along(deltas), y = deltas)) + geom_line()
 
 

@@ -9,11 +9,19 @@ Model_SARSA <- R6Class('Model_SARSA', public = list(
   initialize = function(){
     self$theta = rnorm(25) / sqrt(25)
   },
+  
   theta = NA, x = NA, s = NA,
-  predict = function(s, a){
-    x = self$sa2x(s, a)
+  predict = function(s = NULL, a, row = NA, col = NA){
+    assert_that(!is.null(s) || all(!is.na(c(row, col))),
+                msg = 'Either s or row and col must be non-NULL')
+    if(!is.null(s)){
+      x = self$sa2x(s, a)
+      return (self$theta %*% x)  
+    }else{
+      x = self$sa2x(c(row, col), a)
+      return (self$theta %*% x)  
+    }
     
-    return (self$theta %*% x)
   },
   grad = function(s, a){
     return(self$sa2x(s, a))
@@ -64,16 +72,30 @@ Model_SARSA <- R6Class('Model_SARSA', public = list(
 # getQs function ------------------------------------------------------------------------------
 
 
+# getQs = function(model, s){
+#   # we need Q(s,a) to choose an action
+#   # i.e. a = argmax[a]{ Q(s,a) }
+#   Qs = data.frame(action = character(0), prediction = numeric(0))
+#   ?mdply
+#   model$predict(s, a)
+#   for(a in ALL_POSSIBLE_ACTIONS){
+#     
+#     q_sa = model$predict(s, a)
+#     Qs <- rbind(Qs, data.frame(action = a, prediction = as.numeric(q_sa)))
+#   }
+#   return(Qs)
+# }
+
+
+#getQs(model, s)
+
 getQs = function(model, s){
   # we need Q(s,a) to choose an action
   # i.e. a = argmax[a]{ Q(s,a) }
-  Qs = data_frame(action = character(0), prediction = numeric(0))
-  for(a in ALL_POSSIBLE_ACTIONS){
-    
-    q_sa = model$predict(s, a)
-    Qs <- rbind(Qs, data_frame(action = a, prediction = as.numeric(q_sa)))
-  }
-  return(Qs)
+  Qs = data.frame(row = s[1], col = s[2], a = as.character(ALL_POSSIBLE_ACTIONS), 
+                   stringsAsFactors = F)
+  ret <- mdply(Qs, model$predict) %>% {.[,-c(1,2)]} %>% set_colnames(c("action", "prediction"))
+  return(ret)
 }
 
 
